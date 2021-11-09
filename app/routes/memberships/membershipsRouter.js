@@ -35,7 +35,7 @@ const jsonBodyParser = bodyParser.json();
 
 membershipsRouter.all('*', cors(corsOptions)); // enable pre-flight request
 
-membershipsRouter.route('/renew')
+membershipsRouter.route('/payment')
   .all((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     next();
