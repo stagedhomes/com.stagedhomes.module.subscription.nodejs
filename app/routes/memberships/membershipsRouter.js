@@ -7,7 +7,7 @@ const bodyParser = require("body-parser");
 const membershipsRouter = express.Router();
 
 
-//const Service = require( './class.service');
+const Service = require( './class.service');
 
 const corsWhiteList = JSON.parse(process.env.CORS_WHITELIST);
 if (process.env.APP_ENVIRONMENT === 'dev') {
@@ -35,17 +35,22 @@ const jsonBodyParser = bodyParser.json();
 
 membershipsRouter.all('*', cors(corsOptions)); // enable pre-flight request
 
-membershipsRouter.route('/payment')
+membershipsRouter.route('/create_subscription')
   .all((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     next();
   })
   .post(async (req, res, next ) => {
 
-    const greetTxt = req.body.message;
+    //const greetTxt = req.body.message;
 
-    res.status(200).send(JSON.stringify({ "status": greetTxt }));
-    res.end();
+    Service.createSubscription((response) => {
+      res.status(200).send(JSON.stringify({ 
+        "response": response
+      }));
+      res.end();
+    });
+
 
   })
 ; // /renew
