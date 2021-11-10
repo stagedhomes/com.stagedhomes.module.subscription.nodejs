@@ -40,11 +40,12 @@ membershipsRouter.route('/create_subscription')
     res.setHeader('Content-Type', 'application/json');
     next();
   })
-  .post(async (req, res, next ) => {
+  .post(jsonBodyParser, async (req, res, next ) => {
 
-    //const greetTxt = req.body.message;
+    cardInfo = req.body;
+    console.log(cardInfo);
 
-    Service.createSubscription((response) => {
+    Service.createSubscription(cardInfo, (response) => {
       res.status(200).send(JSON.stringify({ 
         "response": response
       }));

@@ -26,7 +26,7 @@ class Service {
   * Create a subscription in the Authorize.net system
   */
   // ================================================================
-  createSubscription = (callback) => {
+  createSubscription = (cardInfo, callback) => {
     // Authenticate to authorize.net with our keys
     var merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
     merchantAuthenticationType.setName(authorizeNetKeys.apiLoginID);
@@ -43,8 +43,10 @@ class Service {
     paymentScheduleType.setTrialOccurrences(0);
 
     var creditCard = new ApiContracts.CreditCardType();
-    creditCard.setExpirationDate('2038-12');
-    creditCard.setCardNumber('4111111111111111');
+    //creditCard.setExpirationDate('2038-12');
+    creditCard.setExpirationDate(cardInfo.expirationDate);
+    //creditCard.setCardNumber('4111111111111111');
+    creditCard.setCardNumber(cardInfo.cardNumber);
 
     var payment = new ApiContracts.PaymentType();
     payment.setCreditCard(creditCard);
