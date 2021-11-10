@@ -17,6 +17,10 @@ const utils = require('../../utilities/utils.js');
 // ================================================================
 class Service {
   constructor() {
+    // Authenticate to authorize.net with our keys
+    this.merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
+    this.merchantAuthenticationType.setName(authorizeNetKeys.apiLoginID);
+    this.merchantAuthenticationType.setTransactionKey(authorizeNetKeys.transactionKey);
   }
 
 
@@ -27,11 +31,6 @@ class Service {
   */
   // ================================================================
   createSubscription = (cardInfo, callback) => {
-    // Authenticate to authorize.net with our keys
-    var merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
-    merchantAuthenticationType.setName(authorizeNetKeys.apiLoginID);
-    merchantAuthenticationType.setTransactionKey(authorizeNetKeys.transactionKey);
-
     var interval = new ApiContracts.PaymentScheduleType.Interval();
     interval.setLength(1);
     interval.setUnit(ApiContracts.ARBSubscriptionUnitEnum.MONTHS);
@@ -85,7 +84,7 @@ class Service {
     arbSubscription.setShipTo(nameAndAddressType);
 
     var createRequest = new ApiContracts.ARBCreateSubscriptionRequest();
-    createRequest.setMerchantAuthentication(merchantAuthenticationType);
+    createRequest.setMerchantAuthentication(this.merchantAuthenticationType);
     createRequest.setSubscription(arbSubscription);
 
     console.log(JSON.stringify(createRequest.getJSON(), null, 2));
@@ -132,10 +131,6 @@ class Service {
   */
   // ================================================================
   getListSubscriptions = (info, callback) => {
-    const merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
-    merchantAuthenticationType.setName(authorizeNetKeys.apiLoginID);
-    merchantAuthenticationType.setTransactionKey(authorizeNetKeys.transactionKey);
-
     var refId = utils.getRandomInt();
 
     var sorting = new ApiContracts.ARBGetSubscriptionListSorting();
@@ -148,7 +143,7 @@ class Service {
 
     var listRequest = new ApiContracts.ARBGetSubscriptionListRequest();
 
-    listRequest.setMerchantAuthentication(merchantAuthenticationType);
+    listRequest.setMerchantAuthentication(this.merchantAuthenticationType);
 
     listRequest.setRefId(refId);
     listRequest.setSearchType(ApiContracts.ARBGetSubscriptionListSearchTypeEnum.SUBSCRIPTIONACTIVE);
@@ -193,6 +188,47 @@ class Service {
       callback(response);
     });
   } // getListSubscriptions
+
+  // ================================================================
+  /**
+  * Cancel a subscription in the Authorize.net system
+  */
+  // ================================================================
+  cancelSubscription = (subscriptionId, callback) => {
+    const cancelRequest = new ApiContracts.ARBCancelSubscriptionRequest();
+    cancelRequest.setMerchantAuthentication(this.merchantAuthenticationType);
+    cancelRequest.setSubscriptionId(subscriptionId);
+
+    console.log(JSON.stringify(cancelRequest.getJSON(), null, 2));
+
+    var ctrl = new ApiControllers.ARBCancelSubscriptionController(cancelRequest.getJSON());
+
+    ctrl.execute(function(){
+
+      var apiResponse = ctrl.getResponse();
+
+      var response = new ApiContracts.ARBCancelSubscriptionResponse(apiResponse);
+
+      console.log(JSON.stringify(response, null, 2));
+
+      if(response != null){
+        if(response.getMessages().getResultCode() == ApiContracts.MessageTypeEnum.OK){
+          console.log('Message Code : ' + response.getMessages().getMessage()[0].getCode());
+          console.log('Message Text : ' + response.getMessages().getMessage()[0].getText());
+        }
+        else{
+          console.log('Result Code: ' + response.getMessages().getResultCode());
+          console.log('Error Code: ' + response.getMessages().getMessage()[0].getCode());
+          console.log('Error message: ' + response.getMessages().getMessage()[0].getText());
+        }
+      }
+      else{
+        console.log('Null Response.');
+      }
+
+      callback(response);
+    });
+  } // cancelSubscription
 
 } // Service()
 

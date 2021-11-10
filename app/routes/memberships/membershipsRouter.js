@@ -74,8 +74,28 @@ membershipsRouter.route('/get_list_subscriptions')
 
 
   })
-; // /create_subscription
+; // /get_list_subscriptions
 
+
+membershipsRouter.route('/cancel_subscription')
+  .all((req, res, next) => {
+    res.setHeader('Content-Type', 'application/json');
+    next();
+  })
+  .post(jsonBodyParser, async (req, res, next ) => {
+
+    subscriptionId = req.body.subscriptionId;
+
+    Service.cancelSubscription(subscriptionId, (response) => {
+      res.status(200).send(JSON.stringify({ 
+        "response": response
+      }));
+      res.end();
+    });
+
+
+  })
+; // /get_list_subscriptions
 
 membershipsRouter.route('/helloworld')
   .all((req, res, next) => {
