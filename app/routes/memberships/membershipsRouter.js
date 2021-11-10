@@ -43,7 +43,6 @@ membershipsRouter.route('/create_subscription')
   .post(jsonBodyParser, async (req, res, next ) => {
 
     cardInfo = req.body;
-    console.log(cardInfo);
 
     Service.createSubscription(cardInfo, (response) => {
       res.status(200).send(JSON.stringify({ 
@@ -54,7 +53,28 @@ membershipsRouter.route('/create_subscription')
 
 
   })
-; // /renew
+; // /create_subscription
+
+
+membershipsRouter.route('/get_list_subscriptions')
+  .all((req, res, next) => {
+    res.setHeader('Content-Type', 'application/json');
+    next();
+  })
+  .post(jsonBodyParser, async (req, res, next ) => {
+
+    info = req.body;
+
+    Service.getListSubscriptions(info, (response) => {
+      res.status(200).send(JSON.stringify({ 
+        "response": response
+      }));
+      res.end();
+    });
+
+
+  })
+; // /create_subscription
 
 
 membershipsRouter.route('/helloworld')
