@@ -95,7 +95,31 @@ membershipsRouter.route('/cancel_subscription')
 
 
   })
-; // /get_list_subscriptions
+; // /cancel_subscription
+
+membershipsRouter.route('/check_status_subscription')
+  .all((req, res, next) => {
+    res.setHeader('Content-Type', 'application/json');
+    next();
+  })
+  .post(jsonBodyParser, async (req, res, next ) => {
+
+    subscriptionId = req.body.subscriptionId;
+
+    Service.checkStatusSubscription(subscriptionId, (response) => {
+      res.status(200).send(JSON.stringify({ 
+        "response": response
+      }));
+      res.end();
+    });
+
+
+  })
+; // /check_status_subscription
+
+
+
+
 
 membershipsRouter.route('/helloworld')
   .all((req, res, next) => {
