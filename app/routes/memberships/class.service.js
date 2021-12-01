@@ -6,6 +6,7 @@ const ApiControllers = require('authorizenet').APIControllers;
 const utils = require('../../utilities/utils.js');
 
 
+
 //const Mailer = require('../../utilities/class.sendmail');
 
 
@@ -21,6 +22,7 @@ class Service {
     this.merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
     this.merchantAuthenticationType.setName(authorizeNetKeys.apiLoginID);
     this.merchantAuthenticationType.setTransactionKey(authorizeNetKeys.transactionKey);
+    this.subscriptionAmount = 0;
   }
 
 
@@ -31,6 +33,17 @@ class Service {
   */
   // ================================================================
   createSubscription = (cardInfo, callback) => {
+    // set the dollar amount of the subscription
+    const subType = cardInfo.subType;
+    switch (subType.toLowerCase()) {
+      case 'asp':
+        this.subscriptionAmount = '100';
+        break;
+      default:
+        this.subscriptionAmount = '100';
+    }
+
+
     var interval = new ApiContracts.PaymentScheduleType.Interval();
     interval.setLength(1);
     interval.setUnit(ApiContracts.ARBSubscriptionUnitEnum.MONTHS);
@@ -57,26 +70,26 @@ class Service {
     var customer = new ApiContracts.CustomerType();
     customer.setType(ApiContracts.CustomerTypeEnum.INDIVIDUAL);
     customer.setId(utils.getRandomString('Id'));
-    customer.setEmail(utils.getRandomInt()+'@test.anet.net');
-    customer.setPhoneNumber('1232122122');
-    customer.setFaxNumber('1232122122');
-    customer.setTaxId('911011011');
+    customer.setEmail(utils.getRandomInt() + cardInfo.email);
+    customer.setPhoneNumber(cardInfo.phone);
+    //customer.setFaxNumber('1232122122');
+    //customer.setTaxId('911011011');
 
     var nameAndAddressType = new ApiContracts.NameAndAddressType();
-    nameAndAddressType.setFirstName(utils.getRandomString('FName'));
-    nameAndAddressType.setLastName(utils.getRandomString('LName'));
-    nameAndAddressType.setCompany(utils.getRandomString('Company'));
-    nameAndAddressType.setAddress(utils.getRandomString('Address'));
-    nameAndAddressType.setCity(utils.getRandomString('City'));
-    nameAndAddressType.setState(utils.getRandomString('State'));
-    nameAndAddressType.setZip('98004');
-    nameAndAddressType.setCountry('USA');
+    nameAndAddressType.setFirstName(cardInfo.firstName);
+    nameAndAddressType.setLastName(cardInfo.lastName);
+    //nameAndAddressType.setCompany(utils.getRandomString('Company'));
+    nameAndAddressType.setAddress(cardInfo.address);
+    nameAndAddressType.setCity(cardInfo.city);
+    nameAndAddressType.setState(cardInfo.state);
+    nameAndAddressType.setZip(cardInfo.zip);
+    nameAndAddressType.setCountry(cardInfo.country);
 
     var arbSubscription = new ApiContracts.ARBSubscriptionType();
-    arbSubscription.setName(utils.getRandomString('Name'));
+    arbSubscription.setName(`${cardInfo.firstName} ${cardInfo.lastName}`);
     arbSubscription.setPaymentSchedule(paymentScheduleType);
-    arbSubscription.setAmount(utils.getRandomAmount());
-    arbSubscription.setTrialAmount(utils.getRandomAmount());
+    arbSubscription.setAmount(this.subscriptionAmount);
+    //arbSubscription.setTrialAmount(utils.getRandomAmount());
     arbSubscription.setPayment(payment);
     arbSubscription.setOrder(orderType);
     arbSubscription.setCustomer(customer);
