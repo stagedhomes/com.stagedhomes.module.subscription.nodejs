@@ -34,13 +34,17 @@ class Service {
   // ================================================================
   createSubscription = (cardInfo, callback) => {
     // set the dollar amount of the subscription
+    console.log('received cardInfo:');
+    console.log(cardInfo);
     const subType = cardInfo.subType;
     switch (subType.toLowerCase()) {
       case 'asp':
         this.subscriptionAmount = '100';
+        this.trialAmount = '100';
         break;
       default:
         this.subscriptionAmount = '100';
+        this.trialAmount = '100';
     }
 
 
@@ -71,7 +75,7 @@ class Service {
     customer.setType(ApiContracts.CustomerTypeEnum.INDIVIDUAL);
     customer.setId(utils.getRandomString('Id'));
     customer.setEmail(utils.getRandomInt() + cardInfo.email);
-    customer.setPhoneNumber(cardInfo.phone);
+    //customer.setPhoneNumber(cardInfo.phone);
     //customer.setFaxNumber('1232122122');
     //customer.setTaxId('911011011');
 
@@ -89,7 +93,7 @@ class Service {
     arbSubscription.setName(`${cardInfo.firstName} ${cardInfo.lastName}`);
     arbSubscription.setPaymentSchedule(paymentScheduleType);
     arbSubscription.setAmount(this.subscriptionAmount);
-    //arbSubscription.setTrialAmount(utils.getRandomAmount());
+    arbSubscription.setTrialAmount(this.trialAmount);
     arbSubscription.setPayment(payment);
     arbSubscription.setOrder(orderType);
     arbSubscription.setCustomer(customer);
