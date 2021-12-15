@@ -19,6 +19,10 @@ services:
       APP_HOSTNAME: '0.0.0.0'
       APP_ENVIRONMENT: 'prod'
       CORS_WHITELIST: '["http://localhost:4200", "https://stagedhomes.com", "https://www.stagedhomes.com", "staging.stagedhomes.com"]'
+      DB_HOST: 'hyrule.civzmo75fwsi.us-west-2.rds.amazonaws.com'
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: 'shmain'
     networks:
       - nginx-proxy
 

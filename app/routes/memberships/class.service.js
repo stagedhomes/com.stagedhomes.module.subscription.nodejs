@@ -4,6 +4,7 @@ const authorizeNetKeys = require("../../utilities/data/authorizenet-keys.json");
 const ApiContracts = require('authorizenet').APIContracts;
 const ApiControllers = require('authorizenet').APIControllers;
 const utils = require('../../utilities/utils.js');
+const mysql = require('mysql');
 
 
 
@@ -33,6 +34,14 @@ class Service {
   */
   // ================================================================
   createSubscription = (cardInfo, callback) => {
+    // create the mysql connection
+    const con = mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME
+    });
+
     // set the dollar amount of the subscription
     console.log('received cardInfo:');
     console.log(cardInfo);
@@ -121,9 +130,34 @@ class Service {
 
       if(response != null){
         if(response.getMessages().getResultCode() == ApiContracts.MessageTypeEnum.OK){
+          const aspID = cardInfo.aspID;
+          const subID = response.getSubscriptionId();
+          const custProfileID = response.profile.customerProfileId;
+          const custPaymentProfileID = response.profile.customerPaymentProfileId;
+          const custAddressID = response.profile.customerAddressId;
+
+          if (aspID) {
+            const sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
+            // // write data to db
+            // con.connect((err) => {
+            //   if (err) throw err;
+            //   console.log("Connected!");
+            //   const sql = `UPDATE asps SET sid = ${response.getSubscriptionId()}`;
+            //   con.query(sql, (err, result) => {
+            //     if (err) throw err;
+            //     console.log("sql insert result: ");
+            //     console.log(result);
+            //   });
+            // });
+          }
+
+          // const custProfileID = response.get
           console.log('Subscription Id : ' + response.getSubscriptionId());
           console.log('Message Code : ' + response.getMessages().getMessage()[0].getCode());
           console.log('Message Text : ' + response.getMessages().getMessage()[0].getText());
+          console.log('sql : ' + sql);
+          // console.log('raw response : ' + response.profile.customerProfileId);
+
         }
         else{
           console.log('Result Code: ' + response.getMessages().getResultCode());
