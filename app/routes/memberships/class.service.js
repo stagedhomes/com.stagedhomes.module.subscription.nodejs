@@ -136,8 +136,12 @@ class Service {
           const custPaymentProfileID = response.profile.customerPaymentProfileId;
           const custAddressID = response.profile.customerAddressId;
 
-          if (aspID) {
-            const sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
+          let sql = '';
+          if (aspID !== "") {
+            console.log('aspID, is def not empty! lol');
+            console.log(aspID);
+            sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
+            
             // // write data to db
             // con.connect((err) => {
             //   if (err) throw err;
@@ -149,7 +153,7 @@ class Service {
             //     console.log(result);
             //   });
             // });
-          }
+          } // if
 
           // const custProfileID = response.get
           console.log('Subscription Id : ' + response.getSubscriptionId());
