@@ -33,14 +33,7 @@ class Service {
   * Create a subscription in the Authorize.net system
   */
   // ================================================================
-  createSubscription = (cardInfo, callback) => {
-    // create the mysql connection
-    const con = mysql.createConnection({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME
-    });
+  createSubscription (cardInfo, callback) {
 
     // set the dollar amount of the subscription
     console.log('received cardInfo:');
@@ -136,30 +129,17 @@ class Service {
           const custPaymentProfileID = response.profile.customerPaymentProfileId;
           const custAddressID = response.profile.customerAddressId;
 
-          let sql = '';
-          if (aspID !== "") {
-            console.log('aspID, is def not empty! lol');
-            console.log(aspID);
-            sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
-            
-            // // write data to db
-            con.connect((err) => {
-              if (err) throw err;
-              console.log("Connected!");
-              // const sql = `UPDATE asps SET sid = ${response.getSubscriptionId()}`;
-              con.query(sql, (err, result) => {
-                if (err) throw err;
-                console.log("sql insert result: ");
-                console.log(result);
-              });
-            });
-          } // if
+          // becuase of the way things get passed to the router, I need to use
+          // Service.writeIDsToDB instead of this.writeIDsToDB ...
+          // it's weird, but I guess this particular function is getting referenced by
+          // the router.  more info here:
+          // https://stackoverflow.com/questions/45643005/why-is-this-undefined-in-this-class-method
+          Service.writeIDsToDB(aspID, subID, custProfileID, custPaymentProfileID, custAddressID);
 
           // const custProfileID = response.get
           console.log('Subscription Id : ' + response.getSubscriptionId());
           console.log('Message Code : ' + response.getMessages().getMessage()[0].getCode());
           console.log('Message Text : ' + response.getMessages().getMessage()[0].getText());
-          console.log('sql : ' + sql);
           // console.log('raw response : ' + response.profile.customerProfileId);
 
         }
@@ -182,10 +162,62 @@ class Service {
 
   // ================================================================
   /**
+  * Check if the user already has a subscription ID saved in db
+  */
+  // ================================================================
+  // checkUserSID  (uid) {
+    
+  // }
+
+  // ================================================================
+  /**
+  * Write the different IDs to the user in the db
+  */
+  // ================================================================
+  static writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
+    // create the mysql connection
+    const con = mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME
+    });
+
+    let sql = '';
+    let success = false;
+
+    if (aspID !== "") {
+      console.log('aspID, is def not empty! lol');
+      console.log(aspID);
+      sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
+      
+      // // write data to db
+      con.connect((err) => {
+        if (err) {
+          throw err;
+        }
+        console.log("Connected!");
+        success = true;
+        con.query(sql, (err, result) => {
+          if (err) {
+            throw err;
+          }
+          console.log("sql insert result: ");
+          console.log(result);
+          success = true;
+        });
+      });
+    } // if
+
+    return success;
+  }
+
+  // ================================================================
+  /**
   * Get list of subscriptions in the Authorize.net system
   */
   // ================================================================
-  getListSubscriptions = (info, callback) => {
+  getListSubscriptions (info, callback) {
     var refId = utils.getRandomInt();
 
     var sorting = new ApiContracts.ARBGetSubscriptionListSorting();
@@ -249,7 +281,7 @@ class Service {
   * Cancel a subscription in the Authorize.net system
   */
   // ================================================================
-  cancelSubscription = (subscriptionId, callback) => {
+  cancelSubscription (subscriptionId, callback) {
     const cancelRequest = new ApiContracts.ARBCancelSubscriptionRequest();
     cancelRequest.setMerchantAuthentication(this.merchantAuthenticationType);
     cancelRequest.setSubscriptionId(subscriptionId);
@@ -290,7 +322,7 @@ class Service {
   * Check the status of  a subscription in the Authorize.net system
   */
   // ================================================================
-  checkStatusSubscription = (subscriptionId, callback) => {
+  checkStatusSubscription (subscriptionId, callback) {
     var getRequest = new ApiContracts.ARBGetSubscriptionStatusRequest();
     getRequest.setMerchantAuthentication(this.merchantAuthenticationType);
     getRequest.setSubscriptionId(subscriptionId);
