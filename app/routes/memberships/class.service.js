@@ -146,7 +146,7 @@ class Service {
             con.connect((err) => {
               if (err) throw err;
               console.log("Connected!");
-              const sql = `UPDATE asps SET sid = ${response.getSubscriptionId()}`;
+              // const sql = `UPDATE asps SET sid = ${response.getSubscriptionId()}`;
               con.query(sql, (err, result) => {
                 if (err) throw err;
                 console.log("sql insert result: ");
