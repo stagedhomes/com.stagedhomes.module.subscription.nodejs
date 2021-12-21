@@ -143,16 +143,16 @@ class Service {
             sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
             
             // // write data to db
-            // con.connect((err) => {
-            //   if (err) throw err;
-            //   console.log("Connected!");
-            //   const sql = `UPDATE asps SET sid = ${response.getSubscriptionId()}`;
-            //   con.query(sql, (err, result) => {
-            //     if (err) throw err;
-            //     console.log("sql insert result: ");
-            //     console.log(result);
-            //   });
-            // });
+            con.connect((err) => {
+              if (err) throw err;
+              console.log("Connected!");
+              const sql = `UPDATE asps SET sid = ${response.getSubscriptionId()}`;
+              con.query(sql, (err, result) => {
+                if (err) throw err;
+                console.log("sql insert result: ");
+                console.log(result);
+              });
+            });
           } // if
 
           // const custProfileID = response.get
