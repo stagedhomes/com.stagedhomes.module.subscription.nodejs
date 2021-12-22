@@ -4,7 +4,7 @@ const authorizeNetKeys = require("../../utilities/data/authorizenet-keys.json");
 const ApiContracts = require('authorizenet').APIContracts;
 const ApiControllers = require('authorizenet').APIControllers;
 const utils = require('../../utilities/utils.js');
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
 
 
 
@@ -165,9 +165,9 @@ class Service {
   * Check if the user already has a subscription ID saved in db
   */
   // ================================================================
-  static checkUserSID  (uid) {
+  static async checkUserSID (uid) {
     // create the mysql connection
-    const con = mysql.createConnection({
+    const con = await mysql.createConnection({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
@@ -178,37 +178,16 @@ class Service {
     let success = false;
 
     if (uid !== "") {
-      // check db for existing subscription ID
-      con.connect((err) => {
-        if (err) {
-          console.log('connection error occured:');
-          console.log(err);
-          return false;
-          throw err;
-        }
-        con.query(sql, (err, result, fields) => {
-          if (err) {
-            console.log('query error occured:');
-            console.log(err);
-            return false;
-            throw err;
-          }
-
-          if (result[0].sid !== null && result[0].sid !== '') {
-            success = true;
-            console.log("existing SID");
-            console.log(result[0].sid);
-          return result[0].sid;
-          } else {
-            success = false;
-            console.log("no SID found...");
-            console.log(result[0].sid);
-            return false;
-          }
-          // console.log("fields")
-          // console.log(fields)
-        });
-      });
+      const [resultRows, resultFields] = await con.query({sql: sql, rowsAsArray: true });
+      if ( (resultRows[0][0] !== null) && (resultRows[0][0] !== '') ) {
+        // sid exists
+        console.log('sid exists: ' + resultRows[0][0].toString());
+        return resultRows[0][0].toSring();
+      } else {
+        // sid empty
+        console.log('sid empty');
+        return false;
+      }
     }
   }
 
@@ -217,11 +196,11 @@ class Service {
   * Write the different IDs to the user in the db
   */
   // ================================================================
-  static writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
+  static async writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
     let success = false;
 
     // check if SID exists before continuing
-    const sidCheck = Service.checkUserSID(aspID);
+    const sidCheck = await Service.checkUserSID(aspID);
     console.log('sidCheck');
     console.log(sidCheck);
 
