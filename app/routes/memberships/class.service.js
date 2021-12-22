@@ -204,11 +204,11 @@ class Service {
     console.log('sidCheck');
     console.log(sidCheck);
 
-    if (sidCheck !== false) {
+    if (sidCheck === false) {
       // user doesn't already have sub
 
       // create the mysql connection
-      const con = mysql.createConnection({
+      const con = await mysql.createConnection({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
@@ -218,25 +218,16 @@ class Service {
       let sql = '';
 
       if (aspID !== "") {
-        console.log('aspID, is def not empty! lol');
-        console.log(aspID);
+        // console.log('aspID, is def not empty! lol');
+        // console.log(aspID);
         sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
         
         // // write data to db
-        con.connect((err) => {
-          if (err) {
-            throw err;
-          }
-          console.log("Connected!");
-          con.query(sql, (err, result) => {
-            if (err) {
-              throw err;
-            }
-            console.log("sql insert result: ");
-            console.log(result);
-            success = true;
-          });
-        });
+        const updateResult = await con.execute(sql);
+        console.log("sql insert result: ");
+        console.log(updateResult);
+        success = true;
+
       } // if
 
 
