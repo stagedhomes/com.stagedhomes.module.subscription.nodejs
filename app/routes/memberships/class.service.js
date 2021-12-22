@@ -165,16 +165,7 @@ class Service {
   * Check if the user already has a subscription ID saved in db
   */
   // ================================================================
-  // checkUserSID  (uid) {
-    
-  // }
-
-  // ================================================================
-  /**
-  * Write the different IDs to the user in the db
-  */
-  // ================================================================
-  static writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
+  static checkUserSID  (uid) {
     // create the mysql connection
     const con = mysql.createConnection({
       host: process.env.DB_HOST,
@@ -183,33 +174,97 @@ class Service {
       database: process.env.DB_NAME
     });
 
-    let sql = '';
+    let sql = `SELECT sid FROM asps WHERE uid='${uid}';`;
     let success = false;
 
-    if (aspID !== "") {
-      console.log('aspID, is def not empty! lol');
-      console.log(aspID);
-      sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
-      
-      // // write data to db
+    if (uid !== "") {
+      // check db for existing subscription ID
       con.connect((err) => {
         if (err) {
+          console.log('connection error occured:');
+          console.log(err);
+          return false;
           throw err;
         }
-        console.log("Connected!");
-        success = true;
-        con.query(sql, (err, result) => {
+        con.query(sql, (err, result, fields) => {
+          if (err) {
+            console.log('query error occured:');
+            console.log(err);
+            return false;
+            throw err;
+          }
+
+          if (result[0].sid !== null && result[0].sid !== '') {
+            success = true;
+            console.log("existing SID");
+            console.log(result[0].sid);
+          return result[0].sid;
+          } else {
+            success = false;
+            console.log("no SID found...");
+            console.log(result[0].sid);
+            return false;
+          }
+          // console.log("fields")
+          // console.log(fields)
+        });
+      });
+    }
+  }
+
+  // ================================================================
+  /**
+  * Write the different IDs to the user in the db
+  */
+  // ================================================================
+  static writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
+    let success = false;
+
+    // check if SID exists before continuing
+    const sidCheck = Service.checkUserSID(aspID);
+    console.log('sidCheck');
+    console.log(sidCheck);
+
+    if (sidCheck !== false) {
+      // user doesn't already have sub
+
+      // create the mysql connection
+      const con = mysql.createConnection({
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
+      });
+
+      let sql = '';
+
+      if (aspID !== "") {
+        console.log('aspID, is def not empty! lol');
+        console.log(aspID);
+        sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
+        
+        // // write data to db
+        con.connect((err) => {
           if (err) {
             throw err;
           }
-          console.log("sql insert result: ");
-          console.log(result);
-          success = true;
+          console.log("Connected!");
+          con.query(sql, (err, result) => {
+            if (err) {
+              throw err;
+            }
+            console.log("sql insert result: ");
+            console.log(result);
+            success = true;
+          });
         });
-      });
-    } // if
+      } // if
 
-    return success;
+
+    } else {
+      success = false;
+    }
+      return success;
   }
 
   // ================================================================
