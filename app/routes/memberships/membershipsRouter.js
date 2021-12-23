@@ -58,7 +58,9 @@ membershipsRouter.route('/create_subscription')
       });
     } else {
       res.status(200).send(JSON.stringify({ 
-        "response": "subscription already exists for this user."
+        "response": "rejected",
+        "description": "User already has a subscription ID in the database."
+
       }));
       res.end();
     }
