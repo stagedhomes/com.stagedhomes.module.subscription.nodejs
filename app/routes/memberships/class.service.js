@@ -33,7 +33,7 @@ class Service {
   * Create a subscription in the Authorize.net system
   */
   // ================================================================
-  createSubscription (cardInfo, callback) {
+  async createSubscription (cardInfo, callback) {
 
     // set the dollar amount of the subscription
     console.log('received cardInfo:');
@@ -113,7 +113,7 @@ class Service {
 
     // this will then call the callback after its done
     // not sure it is worth trying to convert their API's callbacks to promise.
-    ctrl.execute(function(){
+    ctrl.execute(async function(){
 
       var apiResponse = ctrl.getResponse();
 
@@ -134,7 +134,7 @@ class Service {
           // it's weird, but I guess this particular function is getting referenced by
           // the router.  more info here:
           // https://stackoverflow.com/questions/45643005/why-is-this-undefined-in-this-class-method
-          Service.writeIDsToDB(aspID, subID, custProfileID, custPaymentProfileID, custAddressID);
+          await Service.writeIDsToDB(aspID, subID, custProfileID, custPaymentProfileID, custAddressID);
 
           // const custProfileID = response.get
           console.log('Subscription Id : ' + response.getSubscriptionId());
@@ -165,7 +165,7 @@ class Service {
   * Check if the user already has a subscription ID saved in db
   */
   // ================================================================
-  static async checkUserSID (uid) {
+  async checkUserSID (uid) {
     // create the mysql connection
     const con = await mysql.createConnection({
       host: process.env.DB_HOST,
@@ -182,7 +182,7 @@ class Service {
       if ( (resultRows[0][0] !== null) && (resultRows[0][0] !== '') ) {
         // sid exists
         console.log('sid exists: ' + resultRows[0][0].toString());
-        return resultRows[0][0].toSring();
+        return resultRows[0][0];
       } else {
         // sid empty
         console.log('sid empty');
@@ -196,45 +196,33 @@ class Service {
   * Write the different IDs to the user in the db
   */
   // ================================================================
-  static async writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
+  async writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
     let success = false;
 
-    // check if SID exists before continuing
-    const sidCheck = await Service.checkUserSID(aspID);
-    console.log('sidCheck');
-    console.log(sidCheck);
+    // user doesn't already have sub
 
-    if (sidCheck === false) {
-      // user doesn't already have sub
+    // create the mysql connection
+    const con = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME
+    });
 
-      // create the mysql connection
-      const con = await mysql.createConnection({
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME
-      });
+    let sql = '';
 
-      let sql = '';
+    if (aspID !== "") {
+      // console.log('aspID, is def not empty! lol');
+      // console.log(aspID);
+      sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
+      
+      // // write data to db
+      return await con.execute(sql);
+      // console.log("sql insert result: ");
+      // console.log(updateResult);
+      // success = true;
 
-      if (aspID !== "") {
-        // console.log('aspID, is def not empty! lol');
-        // console.log(aspID);
-        sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
-        
-        // // write data to db
-        const updateResult = await con.execute(sql);
-        console.log("sql insert result: ");
-        console.log(updateResult);
-        success = true;
-
-      } // if
-
-
-    } else {
-      success = false;
-    }
-      return success;
+    } // if
   }
 
   // ================================================================

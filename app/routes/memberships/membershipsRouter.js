@@ -44,12 +44,24 @@ membershipsRouter.route('/create_subscription')
 
     cardInfo = req.body;
 
-    Service.createSubscription(cardInfo, (response) => {
+    // check if SID exists before continuing
+    const aspID = cardInfo.aspID;
+    const sidCheck = await Service.checkUserSID(aspID);
+    console.log('sidCheck');
+    console.log(sidCheck);
+    if (sidCheck === false) {
+      await Service.createSubscription(cardInfo, (response) => {
+        res.status(200).send(JSON.stringify({ 
+          "response": response
+        }));
+        res.end();
+      });
+    } else {
       res.status(200).send(JSON.stringify({ 
-        "response": response
+        "response": "subscription already exists for this user."
       }));
       res.end();
-    });
+    }
 
 
   })
