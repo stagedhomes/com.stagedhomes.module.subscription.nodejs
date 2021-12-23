@@ -24,6 +24,8 @@ class Service {
     this.merchantAuthenticationType.setName(authorizeNetKeys.apiLoginID);
     this.merchantAuthenticationType.setTransactionKey(authorizeNetKeys.transactionKey);
     this.subscriptionAmount = 0;
+    this.trialAmount = 0;
+    this.intervalLength = 0;
   }
 
 
@@ -41,17 +43,19 @@ class Service {
     const subType = cardInfo.subType;
     switch (subType.toLowerCase()) {
       case 'asp':
-        this.subscriptionAmount = '100';
-        this.trialAmount = '100';
+        this.subscriptionAmount = 100;
+        this.trialAmount = 100;
+        this.intervalLength = 12;
         break;
       default:
-        this.subscriptionAmount = '100';
-        this.trialAmount = '100';
+        this.subscriptionAmount = 100;
+        this.trialAmount = 100;
+        this.intervalLength = 12;
     }
 
 
     var interval = new ApiContracts.PaymentScheduleType.Interval();
-    interval.setLength(1);
+    interval.setLength(this.intervalLength);
     interval.setUnit(ApiContracts.ARBSubscriptionUnitEnum.MONTHS);
 
     var paymentScheduleType = new ApiContracts.PaymentScheduleType();
@@ -75,8 +79,8 @@ class Service {
 
     var customer = new ApiContracts.CustomerType();
     customer.setType(ApiContracts.CustomerTypeEnum.INDIVIDUAL);
-    customer.setId(utils.getRandomString('Id'));
-    customer.setEmail(utils.getRandomInt() + cardInfo.email);
+    // customer.setId(utils.getRandomString('Id'));
+    customer.setEmail(cardInfo.email);
     //customer.setPhoneNumber(cardInfo.phone);
     //customer.setFaxNumber('1232122122');
     //customer.setTaxId('911011011');
