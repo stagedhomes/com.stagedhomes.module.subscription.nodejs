@@ -196,7 +196,7 @@ class Service {
   * Write the different IDs to the user in the db
   */
   // ================================================================
-  async writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
+  static async writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
     let success = false;
 
     // user doesn't already have sub
@@ -217,7 +217,8 @@ class Service {
       sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
       
       // // write data to db
-      return await con.execute(sql);
+      const updateResult = await con.execute(sql);
+      return updateResult;
       // console.log("sql insert result: ");
       // console.log(updateResult);
       // success = true;
