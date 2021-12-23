@@ -199,8 +199,6 @@ class Service {
   static async writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
     let success = false;
 
-    // user doesn't already have sub
-
     // create the mysql connection
     const con = await mysql.createConnection({
       host: process.env.DB_HOST,
