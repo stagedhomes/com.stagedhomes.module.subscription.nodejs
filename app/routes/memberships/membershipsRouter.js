@@ -46,26 +46,34 @@ membershipsRouter.route('/create_subscription')
 
     // check if SID exists before continuing
     const aspID = cardInfo.aspID;
-    const sidCheck = await Service.checkUserSID(aspID);
-    console.log('sidCheck');
-    console.log(sidCheck);
-    if (sidCheck === false) {
-      await Service.createSubscription(cardInfo, (response) => {
+    try {
+      const sidCheck = await Service.checkUserSID(aspID);
+      console.log('sidCheck');
+      console.log(sidCheck);
+
+      if (sidCheck === false) {
+        await Service.createSubscription(cardInfo, (response) => {
+          res.status(200).send(JSON.stringify({ 
+            "response": response
+          }));
+          res.end();
+        });
+      } else {
         res.status(200).send(JSON.stringify({ 
-          "response": response
+          "response": "rejected",
+          "description": "User already has a subscription ID in the database."
+
         }));
         res.end();
-      });
-    } else {
+      } // if sidCheck false or success
+    } catch(err) {
+      console.log('error occured trying to check user SID:');
+      console.log(err);
       res.status(200).send(JSON.stringify({ 
-        "response": "rejected",
-        "description": "User already has a subscription ID in the database."
-
+        "response": "error",
+        "description": `error occured: ${err}`
       }));
-      res.end();
     }
-
-
   })
 ; // /create_subscription
 

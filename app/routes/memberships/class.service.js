@@ -178,18 +178,39 @@ class Service {
       database: process.env.DB_NAME
     });
 
+    // console.log(`connection creds: host: ${process.env.DB_HOST} user: ${process.env.DB_USER} pw: ${process.env.DB_PASSWORD} db: ${process.env.DB_NAME}`);
+
     let sql = `SELECT sid FROM asps WHERE uid='${uid}';`;
     let success = false;
+    
+    // await con.query({sql: sql, rowsAsArray: true })
+    //   .then((data1, data2) => {
+    //     console.log('data1');
+    //     console.log(data1);
+    //     console.log('data2');
+    //     console.log(data2);
+    //   })
+    //   .catch((err) => {
+    //     console.log('error with the sql query...');
+    //     console.log(err);
+    //   });
 
     if (uid !== "") {
-      const [resultRows, resultFields] = await con.query({sql: sql, rowsAsArray: true });
-      if ( (resultRows[0][0] !== null) && (resultRows[0][0] !== '') ) {
-        // sid exists
-        console.log('sid exists: ' + resultRows[0][0].toString());
-        return resultRows[0][0];
-      } else {
-        // sid empty
-        console.log('sid empty');
+      try {
+        // console.log(`about to try SQL: ${sql}`);
+        const [resultRows, resultFields] = await con.query({sql: sql, rowsAsArray: true });
+        if ( (resultRows[0][0] !== null) && (resultRows[0][0] !== '') ) {
+          // sid exists
+          console.log('sid exists: ' + resultRows[0][0].toString());
+          return resultRows[0][0];
+        } else {
+          // sid empty
+          console.log('sid empty');
+          return false;
+        }
+      } catch (err) {
+        console.log(`query failed due to error:`);
+        console.log(err);
         return false;
       }
     }
