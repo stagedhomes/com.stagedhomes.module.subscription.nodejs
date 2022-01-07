@@ -43,6 +43,7 @@ membershipsRouter.route('/create_subscription')
   .post(jsonBodyParser, async (req, res, next ) => {
 
     cardInfo = req.body;
+    console.log(cardInfo);
 
     // check if SID exists before continuing
     const aspID = cardInfo.aspID;
@@ -60,8 +61,14 @@ membershipsRouter.route('/create_subscription')
         });
       } else {
         res.status(200).send(JSON.stringify({ 
-          "response": "rejected",
-          "description": "User already has a subscription ID in the database."
+          "response": {
+            "messages" : {
+              "resultCode" : "rejected",
+              "message": [
+                { "text": "User already has a subscription ID in the database." }
+              ] 
+            }
+          }
 
         }));
         res.end();
