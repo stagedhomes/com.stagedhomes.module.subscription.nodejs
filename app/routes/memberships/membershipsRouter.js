@@ -126,7 +126,7 @@ membershipsRouter.route('/cancel_subscription')
   })
 ; // /cancel_subscription
 
-membershipsRouter.route('/check_status_subscription')
+membershipsRouter.route('/check_status_subscription/sid')
   .all((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     next();
@@ -144,7 +144,28 @@ membershipsRouter.route('/check_status_subscription')
 
 
   })
-; // /check_status_subscription
+; // /check_status_subscription/sid
+
+membershipsRouter.route('/check_status_subscription/aspid')
+  .all((req, res, next) => {
+    res.setHeader('Content-Type', 'application/json');
+    next();
+  })
+  .post(jsonBodyParser, async (req, res, next ) => {
+
+    aspID = req.body.aspId;
+    subscriptionId = await Service.checkUserSID(aspID);
+
+    Service.checkStatusSubscription(subscriptionId, (response) => {
+      res.status(200).send(JSON.stringify({ 
+        "response": response
+      }));
+      res.end();
+    });
+
+
+  })
+; // /check_status_subscription/aspid
 
 
 

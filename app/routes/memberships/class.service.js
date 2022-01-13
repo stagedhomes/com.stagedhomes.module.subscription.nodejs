@@ -357,6 +357,7 @@ class Service {
   // ================================================================
   /**
   * Check the status of  a subscription in the Authorize.net system
+  * Return: status: (active | expired | suspended | canceled | terminated)
   */
   // ================================================================
   checkStatusSubscription (subscriptionId, callback) {
