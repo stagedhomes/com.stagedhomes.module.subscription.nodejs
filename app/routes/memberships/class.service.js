@@ -129,6 +129,27 @@ class Service {
         if(response.getMessages().getResultCode() == ApiContracts.MessageTypeEnum.OK){
           const aspID = cardInfo.aspID;
           const subID = response.getSubscriptionId();
+
+          const subStatus = 'active';
+
+          const subType = cardInfo.subType;
+          let subInterval = '';
+          switch (subType.toLowerCase()) {
+            case 'asp':
+              subInterval = 12;
+              break;
+            default:
+              subInterval = 12;
+          }
+
+
+          // get today's date
+          const today = new Date();
+          const dd = String(today.getDate()).padStart(2, '0');
+          const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+          const yyyy = today.getFullYear();
+          const creationDate = `${yyyy}-${mm}-${dd}`;
+
           const custProfileID = response.profile.customerProfileId;
           const custPaymentProfileID = response.profile.customerPaymentProfileId;
           const custAddressID = response.profile.customerAddressId;
@@ -138,7 +159,8 @@ class Service {
           // it's weird, but I guess this particular function is getting referenced by
           // the router.  more info here:
           // https://stackoverflow.com/questions/45643005/why-is-this-undefined-in-this-class-method
-          await Service.writeIDsToDB(aspID, subID, custProfileID, custPaymentProfileID, custAddressID);
+          // expected values: (aspID, subID, subStatus, subInterval, creationDate, custProfileID, custPaymentProfileID, custAddressID)
+          await Service.writeIDsToDB(aspID, subID, subStatus, subInterval, creationDate, custProfileID, custPaymentProfileID, custAddressID);
 
           // const custProfileID = response.get
           console.log('Subscription Id : ' + response.getSubscriptionId());
@@ -180,7 +202,7 @@ class Service {
 
     // console.log(`connection creds: host: ${process.env.DB_HOST} user: ${process.env.DB_USER} pw: ${process.env.DB_PASSWORD} db: ${process.env.DB_NAME}`);
 
-    let sql = `SELECT sid FROM asps WHERE uid='${uid}';`;
+    let sql = `SELECT sub_id FROM authorizenet_subs WHERE aspid='${uid}';`;
     let success = false;
     
     // await con.query({sql: sql, rowsAsArray: true })
@@ -221,7 +243,7 @@ class Service {
   * Write the different IDs to the user in the db
   */
   // ================================================================
-  static async writeIDsToDB (aspID, subID, custProfileID, custPaymentProfileID, custAddressID) {
+  static async writeIDsToDB (aspID, subID, subStatus, subInterval, creationDate, custProfileID, custPaymentProfileID, custAddressID) {
     let success = false;
 
     // create the mysql connection
@@ -237,7 +259,12 @@ class Service {
     if (aspID !== "") {
       // console.log('aspID, is def not empty! lol');
       // console.log(aspID);
-      sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
+      // sql = `UPDATE asps SET sid='${subID}', customer_pid='${custProfileID}', customer_ppid='${custPaymentProfileID}', customer_aid='${custAddressID}' WHERE uid='${aspID}'`;
+      sql = `INSERT INTO authorizenet_subs 
+      (aspid, sub_id, sub_status, sub_interval, creation_date, customer_pid, customer_ppid, customer_aid)
+      VALUES('${aspID}', '${subID}', '${subStatus}', '${subInterval}', '${creationDate}', '${custProfileID}', '${custPaymentProfileID}', '${custAddressID}')
+      ON DUPLICATE KEY UPDATE    
+      sub_id=VALUES(sub_id), sub_status=VALUES(sub_status), sub_interval=VALUES(sub_interval), creation_date=VALUES(creation_date), customer_pid=VALUES(customer_pid), customer_ppid=VALUES(customer_ppid), customer_aid=VALUES(customer_aid);`;
       
       // // write data to db
       const updateResult = await con.execute(sql);
