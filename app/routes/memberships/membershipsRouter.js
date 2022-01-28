@@ -188,7 +188,7 @@ membershipsRouter.route('/update_subscription')
   })
 ; // /update_subscription
 
-membershipsRouter.route('/get_subscription')
+membershipsRouter.route('/get_subscription/sid')
   .all((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     next();
@@ -206,9 +206,28 @@ membershipsRouter.route('/get_subscription')
 
 
   })
-; // /update_subscription
+; // /get_subscription
+
+membershipsRouter.route('/get_subscription/aspid')
+  .all((req, res, next) => {
+    res.setHeader('Content-Type', 'application/json');
+    next();
+  })
+  .post(jsonBodyParser, async (req, res, next ) => {
+
+    aspID = req.body.aspId;
+    subscriptionId = await Service.checkUserSID(aspID);
+
+    Service.getSubscription(subscriptionId, (response) => {
+      res.status(200).send(JSON.stringify({ 
+        "response": response
+      }));
+      res.end();
+    });
 
 
+  })
+; // /check_status_subscription/aspid
 
 membershipsRouter.route('/helloworld')
   .all((req, res, next) => {
