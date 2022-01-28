@@ -104,7 +104,7 @@ class Service {
     arbSubscription.setOrder(orderType);
     arbSubscription.setCustomer(customer);
     arbSubscription.setBillTo(nameAndAddressType);
-    arbSubscription.setShipTo(nameAndAddressType);
+    //arbSubscription.setShipTo(nameAndAddressType);
 
     var createRequest = new ApiContracts.ARBCreateSubscriptionRequest();
     createRequest.setMerchantAuthentication(this.merchantAuthenticationType);
@@ -422,6 +422,120 @@ class Service {
       callback(response);
     });
   } // cancelSubscription
+
+  // ================================================================
+  /**
+  * Update the user's credit card info
+  * Return: some kind of response...
+  */
+  // ================================================================
+  updateSubscription (cardInfo, callback) {
+    const subscriptionId = cardInfo.subscriptionId;
+
+
+    //var merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
+    //merchantAuthenticationType.setName(constants.apiLoginKey);
+    //merchantAuthenticationType.setTransactionKey(constants.transactionKey);
+
+    var orderType = new ApiContracts.OrderType();
+    orderType.setInvoiceNumber(utils.getRandomString('Inv:')); 
+    orderType.setDescription(utils.getRandomString('Description'));
+
+    var creditCard = new ApiContracts.CreditCardType();
+    creditCard.setExpirationDate(cardInfo.expirationDate);
+    creditCard.setCardNumber(cardInfo.cardNumber);
+
+    var payment = new ApiContracts.PaymentType();
+    payment.setCreditCard(creditCard);
+
+    var nameAndAddressType = new ApiContracts.NameAndAddressType();
+    nameAndAddressType.setFirstName(cardInfo.firstName);
+    nameAndAddressType.setLastName(cardInfo.lastName);
+    //nameAndAddressType.setCompany(utils.getRandomString('Company'));
+    nameAndAddressType.setAddress(cardInfo.address);
+    nameAndAddressType.setCity(cardInfo.city);
+    nameAndAddressType.setState(cardInfo.state);
+    nameAndAddressType.setZip(cardInfo.zip);
+    nameAndAddressType.setCountry(cardInfo.country);
+    var arbSubscriptionType = new ApiContracts.ARBSubscriptionType();
+    arbSubscriptionType.setOrder(orderType);
+    arbSubscriptionType.setBillTo(nameAndAddressType);
+
+    var updateRequest = new ApiContracts.ARBUpdateSubscriptionRequest();
+    updateRequest.setMerchantAuthentication(this.merchantAuthenticationType);
+    updateRequest.setSubscriptionId(subscriptionId);
+    updateRequest.setSubscription(arbSubscriptionType);
+
+
+    console.log(JSON.stringify(updateRequest.getJSON(), null, 2));
+
+    var ctrl = new ApiControllers.ARBUpdateSubscriptionController(updateRequest.getJSON());
+
+    ctrl.execute(function(){
+
+      var apiResponse = ctrl.getResponse();
+
+      var response = new ApiContracts.ARBUpdateSubscriptionResponse(apiResponse);
+
+      console.log(JSON.stringify(response, null, 2));
+
+      if(response != null){
+        if(response.getMessages().getResultCode() == ApiContracts.MessageTypeEnum.OK){
+          console.log('Message Code : ' + response.getMessages().getMessage()[0].getCode());
+          console.log('Message Text : ' + response.getMessages().getMessage()[0].getText());
+        }
+        else{
+          console.log('Result Code: ' + response.getMessages().getResultCode());
+          console.log('Error Code: ' + response.getMessages().getMessage()[0].getCode());
+          console.log('Error message: ' + response.getMessages().getMessage()[0].getText());
+        }
+      }
+      else{
+        console.log('Null Response.');
+      }
+
+      callback(response);
+    });
+  } // updateSubscription
+
+  getSubscription (subscriptionId, callback) {
+
+    var getRequest = new ApiContracts.ARBGetSubscriptionRequest();
+    getRequest.setMerchantAuthentication(this.merchantAuthenticationType);
+    getRequest.setSubscriptionId(subscriptionId);
+
+    console.log(JSON.stringify(getRequest.getJSON(), null, 2));
+
+    var ctrl = new ApiControllers.ARBGetSubscriptionController(getRequest.getJSON());
+
+    ctrl.execute(function(){
+      var apiResponse = ctrl.getResponse();
+
+      var response = new ApiContracts.ARBGetSubscriptionResponse(apiResponse);
+
+      console.log(JSON.stringify(response, null, 2));
+
+      if(response != null){
+        if(response.getMessages().getResultCode() == ApiContracts.MessageTypeEnum.OK){
+          console.log('Subscription Name : ' + response.getSubscription().getName());
+          console.log('Message Code : ' + response.getMessages().getMessage()[0].getCode());
+          console.log('Message Text : ' + response.getMessages().getMessage()[0].getText());
+        }
+        else{
+          console.log('Result Code: ' + response.getMessages().getResultCode());
+          console.log('Error Code: ' + response.getMessages().getMessage()[0].getCode());
+          console.log('Error message: ' + response.getMessages().getMessage()[0].getText());
+        }
+      }
+      else{
+        console.log('Null Response.');
+      }
+
+
+      callback(response);
+    });
+  } // /getSubscription
+
 
 } // Service()
 
