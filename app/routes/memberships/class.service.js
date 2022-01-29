@@ -429,8 +429,14 @@ class Service {
   * Return: some kind of response...
   */
   // ================================================================
-  updateSubscription (cardInfo, callback) {
-    const subscriptionId = cardInfo.subscriptionId;
+  async updateSubscription (cardInfo, callback) {
+    let subscriptionId = '';
+    if (!cardInfo.subscriptionId) {
+      subscriptionId = await this.checkUserSID(cardInfo.aspID);
+    } else {
+      subscriptionId = cardInfo.subscriptionId;
+    }
+
 
 
     //var merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
