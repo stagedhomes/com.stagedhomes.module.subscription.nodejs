@@ -451,7 +451,6 @@ class Service {
     var nameAndAddressType = new ApiContracts.NameAndAddressType();
     nameAndAddressType.setFirstName(cardInfo.firstName);
     nameAndAddressType.setLastName(cardInfo.lastName);
-    //nameAndAddressType.setCompany(utils.getRandomString('Company'));
     nameAndAddressType.setAddress(cardInfo.address);
     nameAndAddressType.setCity(cardInfo.city);
     nameAndAddressType.setState(cardInfo.state);
