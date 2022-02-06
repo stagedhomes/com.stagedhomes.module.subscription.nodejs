@@ -465,6 +465,7 @@ class Service {
     var arbSubscriptionType = new ApiContracts.ARBSubscriptionType();
     arbSubscriptionType.setOrder(orderType);
     arbSubscriptionType.setBillTo(nameAndAddressType);
+    arbSubscriptionType.setPayment(payment);
 
     var updateRequest = new ApiContracts.ARBUpdateSubscriptionRequest();
     updateRequest.setMerchantAuthentication(this.merchantAuthenticationType);
